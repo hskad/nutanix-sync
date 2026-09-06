@@ -88,8 +88,8 @@ Instead of relying on centralized master bottlenecks or naive $O(N^2)$ broadcast
 
 ```bash
 # Clone the repository
-git clone https://github.com/<your-username>/<repo-name>.git
-cd <repo-name>
+git clone https://github.com/hskad/nutanix-sync.git
+cd nutanix-sync
 
 # Install dependencies
 python -m pip install -r requirements.txt

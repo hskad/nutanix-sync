@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nutanix-Sync // Distributed Cluster Fabric</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="editorial-shell">
+    
+    <!-- MASTHEAD HEADER -->
+    <header class="masthead">
+      <div class="masthead-left">
+        <div class="folio-tag">SYS.SPEC // 02 — DISTRIBUTED RECONCILIATION</div>
+        <h1 class="masthead-title">Nutanix—Sync</h1>
+        <p class="masthead-sub">Autonomous multi-node file synchronization via Merkle delta-swarms & epidemic gossip.</p>
+      </div>
+
+      <div class="masthead-right">
+        <div class="telemetry-pill-group">
+          <div class="pill-metric" id="wsStatusBadge">
+            <span class="pill-dot"></span>
+            <span id="wsStatusText">CONNECTING</span>
+          </div>
+          <div class="pill-metric" id="clusterConsistencyBadge">
+            <span class="pill-status-box"></span>
+            <span id="clusterConsistencyText">INITIALIZING</span>
+          </div>
+        </div>
+        <div class="folio-date">IIT GUWAHATI R&D &bull; VER 2.4.0</div>
+      </div>
+    </header>
+
+    <!-- METRICS STRIP (SWISS EDITORIAL RULE TABLE) -->
+    <section class="metrics-strip">
+      <div class="metric-cell">
+        <div class="metric-num-header">
+          <span class="metric-index">01</span>
+          <span class="metric-caption">ACTIVE TOPOLOGY</span>
+        </div>
+        <div class="metric-value-row">
+          <span class="metric-big" id="metricAliveNodes">0</span>
+          <span class="metric-unit">/ <span id="metricTotalNodes">0</span> NODES ONLINE</span>
+        </div>
+        <div class="metric-footnote">SWIM failure detector</div>
+      </div>
+
+      <div class="metric-cell">
+        <div class="metric-num-header">
+          <span class="metric-index">02</span>
+          <span class="metric-caption">BANDWIDTH EFFICIENCY</span>
+        </div>
+        <div class="metric-value-row">
+          <span class="metric-big" id="metricBandwidthSavedPct">0%</span>
+          <span class="metric-unit" id="metricBytesSaved">0 B SAVED</span>
+        </div>
+        <div class="metric-footnote">Content-defined delta chunking</div>
+      </div>
+
+      <div class="metric-cell">
+        <div class="metric-num-header">
+          <span class="metric-index">03</span>
+          <span class="metric-caption">WIRE TRANSMISSION</span>
+        </div>
+        <div class="metric-value-row">
+          <span class="metric-big" id="metricBytesTransferred">0 B</span>
+          <span class="metric-unit">TOTAL EGRESS</span>
+        </div>
+        <div class="metric-footnote">P2P Swarm distribution</div>
+      </div>
+
+      <div class="metric-cell">
+        <div class="metric-num-header">
+          <span class="metric-index">04</span>
+          <span class="metric-caption">CAUSAL ANOMALIES</span>
+        </div>
+        <div class="metric-value-row">
+          <span class="metric-big" id="metricConflictsCount">0</span>
+          <span class="metric-unit">BRANCHES SAFE</span>
+        </div>
+        <div class="metric-footnote">Vector clock non-destructive isolation</div>
+      </div>
+    </section>
+
+    <!-- MAIN EDITORIAL GRID -->
+    <section class="workspace-grid">
+      <!-- LEFT: TOPOLOGY SCHEMATIC -->
+      <div class="column-schematic">
+        <div class="section-banner">
+          <div class="banner-title">
+            <span class="banner-code">FIG. 01</span>
+            <h2>Cluster Topology & Swarm Mesh</h2>
+          </div>
+          <div class="banner-controls">
+            <button class="tab-btn active" id="btnViewCanvas">SCHEMATIC</button>
+            <button class="tab-btn" id="btnViewGrid">MATRIX</button>
+          </div>
+        </div>
+
+        <div class="schematic-canvas-box" id="canvasContainer">
+          <canvas id="topologyCanvas"></canvas>
+          <div class="schematic-annotations">
+            <span class="annotation-item"><span class="anno-box online"></span> Online node</span>
+            <span class="annotation-item"><span class="anno-box offline"></span> Severed node</span>
+            <span class="annotation-item"><span class="anno-box active"></span> Merkle gossip vector</span>
+          </div>
+        </div>
+
+        <div class="schematic-grid-box hidden" id="nodeGridView"></div>
+      </div>
+
+      <!-- RIGHT: OPERATOR CONTROL COLUMN -->
+      <div class="column-operations">
+        <div class="section-banner">
+          <div class="banner-title">
+            <span class="banner-code">SEC. 02</span>
+            <h2>Cluster Operations</h2>
+          </div>
+        </div>
+
+        <div class="operations-stack">
+          <!-- 1. Scale Section -->
+          <div class="op-module">
+            <div class="op-head">
+              <span class="op-num">2.1</span>
+              <span class="op-title">CLUSTER SCALE</span>
+            </div>
+            <p class="op-desc">Instantiate peer nodes with decentralized gossip routing (scales $O(\log N)$).</p>
+            <div class="op-button-row">
+              <button class="btn-micro" onclick="spawnScale(2)">02 NODES</button>
+              <button class="btn-micro" onclick="spawnScale(5)">05 NODES</button>
+              <button class="btn-micro" onclick="spawnScale(10)">10 NODES</button>
+              <button class="btn-micro" onclick="spawnScale(25)">25 NODES</button>
+              <button class="btn-micro" onclick="spawnScale(50)">50 NODES</button>
+            </div>
+          </div>
+
+          <!-- 2. File Injection -->
+          <div class="op-module">
+            <div class="op-head">
+              <span class="op-num">2.2</span>
+              <span class="op-title">INJECT &amp; BROADCAST</span>
+            </div>
+            <div class="op-input-group">
+              <input type="text" id="inputRelPath" value="dataset/enterprise_core.bin" placeholder="Relative path">
+              <select id="selectFileSize">
+                <option value="64">64 KB (1 Chunk)</option>
+                <option value="256" selected>256 KB (4 Chunks)</option>
+                <option value="1024">1 MB (16 Chunks)</option>
+              </select>
+            </div>
+            <button class="btn-action" id="btnBroadcastFile" onclick="triggerBroadcastFile()">
+              <span>Drop File on Node 00 &rarr;</span>
+            </button>
+          </div>
+
+          <!-- 3. Delta Benchmark -->
+          <div class="op-module">
+            <div class="op-head">
+              <span class="op-num">2.3</span>
+              <span class="op-title">DELTA-SYNC BENCHMARK</span>
+            </div>
+            <p class="op-desc">Mutates 64 bytes inside a 256KB block to measure wire reduction via Merkle diffing.</p>
+            <button class="btn-action btn-accent" onclick="triggerMutateDelta()">
+              <span>Mutate 64 Bytes (Delta Verification)</span>
+            </button>
+          </div>
+
+          <!-- 4. Conflict Branching -->
+          <div class="op-module">
+            <div class="op-head">
+              <span class="op-num">2.4</span>
+              <span class="op-title">SPLIT-BRAIN CONFLICT</span>
+            </div>
+            <p class="op-desc">Forces concurrent divergent writes on Node 00 and Node 01 during simulated partition.</p>
+            <button class="btn-action btn-secondary" onclick="triggerConflict()">
+              <span>Inject Concurrent Modification</span>
+            </button>
+          </div>
+
+          <!-- 5. Chaos Suite -->
+          <div class="op-module op-module-chaos">
+            <div class="op-head">
+              <span class="op-num">2.5</span>
+              <span class="op-title">RESILIENCE &amp; FAULT INJECTION</span>
+            </div>
+            <div class="chaos-grid">
+              <button class="btn-action btn-danger" onclick="triggerKillNode()">Sever Random Node</button>
+              <button class="btn-action btn-outline" onclick="triggerReviveNode()">Rejoin &amp; Catch Up</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LOWER SECTION: TECHNICAL LEDGER & TELEMETRY -->
+    <section class="ledger-grid">
+      <!-- FILE CATALOG -->
+      <div class="ledger-column">
+        <div class="section-banner">
+          <div class="banner-title">
+            <span class="banner-code">TAB. 03</span>
+            <h2>Synchronized Directory Index</h2>
+          </div>
+          <span class="banner-meta" id="catalogFilesCount">0 FILES</span>
+        </div>
+        <div class="table-scroll-wrap">
+          <table class="editorial-table">
+            <thead>
+              <tr>
+                <th>PATH</th>
+                <th>SIZE</th>
+                <th>BLOCKS</th>
+                <th>SHA-256 DIGEST</th>
+                <th>VECTOR CLOCK CAUSALITY</th>
+                <th>ORIGIN</th>
+              </tr>
+            </thead>
+            <tbody id="filesTableBody">
+              <tr>
+                <td colspan="6" class="table-empty">Directory idle. Inject a file to begin synchronized tracking.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TELEMETRY JOURNAL -->
+      <div class="ledger-column">
+        <div class="section-banner">
+          <div class="banner-title">
+            <span class="banner-code">LOG. 04</span>
+            <h2>Real-time Telemetry Journal</h2>
+          </div>
+          <button class="btn-ghost" onclick="clearLogs()">CLEAR</button>
+        </div>
+        <div class="journal-box" id="terminalLog">
+          <div class="journal-entry"><span class="j-ts">[INIT]</span> Telemetry pipeline active. SWIM protocol monitoring 127.0.0.1.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="editorial-footer">
+      <div class="footer-left">
+        <span>NUTANIX HACKATHON IIT GUWAHATI</span>
+        <span class="separator">/</span>
+        <span>TOPIC 02: SCALABLE CLUSTER FILE SYNCHRONIZATION</span>
+      </div>
+      <div class="footer-right">
+        <span>CONTENT-DEFINED CHUNKING &bull; MERKLE DIRECTORY TREE &bull; VECTOR CLOCKS</span>
+      </div>
+    </footer>
+
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

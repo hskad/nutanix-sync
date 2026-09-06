@@ -108,8 +108,9 @@ class FileChunker:
             - required_chunks: list of ChunkInfo objects representing what needs to be fetched
         """
         if old_manifest is None or old_manifest.deleted:
-            # Everything is new
-            return [c.hash for c in new_manifest.chunks], new_manifest.chunks
+            # Everything is new: preserve unique missing hashes
+            unique_hashes = list(dict.fromkeys(c.hash for c in new_manifest.chunks))
+            return unique_hashes, new_manifest.chunks
 
         old_hashes = {c.hash for c in old_manifest.chunks}
         needed_hashes = []
@@ -117,7 +118,8 @@ class FileChunker:
 
         for chunk in new_manifest.chunks:
             if chunk.hash not in old_hashes:
-                needed_hashes.append(chunk.hash)
+                if chunk.hash not in needed_hashes:
+                    needed_hashes.append(chunk.hash)
                 required_chunks.append(chunk)
 
         return needed_hashes, required_chunks

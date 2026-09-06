@@ -82,25 +82,35 @@ class SwarmManager:
         self,
         needed_chunk_hashes: List[str],
         rel_path: str,
-        peers: List[PeerInfo]
+        peers: List[PeerInfo],
+        concurrency: int = 8
     ) -> Dict[str, bytes]:
         """
-        Fetches multiple missing chunks in parallel across available cluster peers.
+        Fetches multiple missing chunks in parallel across available cluster peers,
+        throttled by concurrency semaphore to prevent TCP socket exhaustion.
         """
         chunk_map: Dict[str, bytes] = {}
         if not needed_chunk_hashes:
             return chunk_map
 
-        tasks = []
-        for ch_hash in needed_chunk_hashes:
-            tasks.append(self.fetch_chunk(ch_hash, rel_path, peers))
+        sem = asyncio.Semaphore(concurrency)
 
+        async def _fetch_one(ch_hash: str):
+            async with sem:
+                for attempt in range(2):
+                    res = await self.fetch_chunk(ch_hash, rel_path, peers)
+                    if isinstance(res, bytes):
+                        return ch_hash, res
+                    await asyncio.sleep(0.05)
+                return ch_hash, None
+
+        tasks = [_fetch_one(ch) for ch in needed_chunk_hashes]
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
-        for ch_hash, res in zip(needed_chunk_hashes, results):
-            if isinstance(res, bytes):
-                chunk_map[ch_hash] = res
-            else:
-                print(f"[{self.node_id}] Failed to fetch chunk {ch_hash}: {res}")
+        for item in results:
+            if isinstance(item, tuple):
+                ch_hash, data = item
+                if data is not None:
+                    chunk_map[ch_hash] = data
 
         return chunk_map

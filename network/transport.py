@@ -27,7 +27,7 @@ class AsyncTCPTransport:
 
     async def start_server(self):
         self._running = True
-        self.server = await asyncio.start_server(self._handle_client, self.host, self.port)
+        self.server = await asyncio.start_server(self._handle_client, self.host, self.port, backlog=256)
         # Update port if dynamic port 0 was passed
         self.port = self.server.sockets[0].getsockname()[1]
         logger.info(f"Transport listening on {self.host}:{self.port}")

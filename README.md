@@ -122,6 +122,16 @@ python run_node.py --id node-beta --dir ./folder_b --port 9102 --peer 127.0.0.1:
 
 Drop or modify any file in `folder_a` and watch it instantaneously propagate to `folder_b`!
 
+### 4. Run the Live Physical Delta Benchmark
+
+Execute a live benchmark measuring real disk I/O, Merkle tree diffing, and wire bandwidth reduction on an actual multi-megabyte dataset:
+
+```bash
+python benchmark_delta.py --size-mb 5
+```
+
+Outputs a formatted scorecard demonstrating >97%+ wire reduction on mutated blocks.
+
 ---
 
 ## Testing

@@ -227,7 +227,9 @@ class ClusterOrchestrator:
                 "peers": summary["peers"],
                 "bytes_transferred": summary["bytes_transferred"],
                 "bytes_saved": summary["bytes_saved"],
-                "recent_mutations": summary["recent_mutations"]
+                "recent_mutations": summary["recent_mutations"],
+                "files": summary["files"],
+                "conflicts": summary["conflicts"]
             })
 
         # Consistency analysis: all online nodes must have identical non-empty root hash

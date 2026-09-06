@@ -92,9 +92,7 @@ class AsyncTCPTransport:
 
     @classmethod
     async def send_message(cls, host: str, port: int, message: SyncMessage, timeout: float = 3.0) -> Optional[SyncMessage]:
-        """
-        Connects to remote node, sends length-prefixed message, and awaits response.
-        """
+        writer = None
         try:
             reader, writer = await asyncio.wait_for(asyncio.open_connection(host, port), timeout=timeout)
             
@@ -108,10 +106,14 @@ class AsyncTCPTransport:
             resp_len = struct.unpack("!I", length_bytes)[0]
             resp_bytes = await asyncio.wait_for(reader.readexactly(resp_len), timeout=timeout)
             
-            writer.close()
-            await writer.wait_closed()
-
             return SyncMessage.from_json(resp_bytes.decode("utf-8"))
         except Exception as e:
             logger.debug(f"Failed to send message to {host}:{port}: {e}")
             return None
+        finally:
+            if writer is not None:
+                try:
+                    writer.close()
+                    await writer.wait_closed()
+                except Exception:
+                    pass

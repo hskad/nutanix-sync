@@ -1,9 +1,12 @@
 import os
 import shutil
 import tempfile
+import warnings
 import asyncio
 import unittest
 from cluster_sim.orchestrator import ClusterOrchestrator
+
+warnings.filterwarnings("ignore", category=ResourceWarning)
 
 class TestClusterSync(unittest.IsolatedAsyncioTestCase):
     async def asyncSetUp(self):
@@ -12,6 +15,7 @@ class TestClusterSync(unittest.IsolatedAsyncioTestCase):
 
     async def asyncTearDown(self):
         await self.orchestrator.shutdown_cluster()
+        await asyncio.sleep(0.05)
         shutil.rmtree(self.sandbox, ignore_errors=True)
 
     async def test_3_node_sync_propagation(self):

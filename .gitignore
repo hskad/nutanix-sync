@@ -33,6 +33,7 @@ ENV/
 
 # Cluster simulation sandboxes & temporary files
 cluster_sandbox/
+demo_folder_*/
 .nutanix_sync/
 *.tmp*
 *.swp

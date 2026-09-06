@@ -87,14 +87,28 @@ class StateJournal:
             try:
                 with open(tmp_file, "w", encoding="utf-8") as f:
                     json.dump(data, f, indent=2)
-                os.replace(tmp_file, self.state_file)
+                
+                # Retry on Windows to handle brief AV / indexing locks
+                replaced = False
+                for _ in range(3):
+                    try:
+                        os.replace(tmp_file, self.state_file)
+                        replaced = True
+                        break
+                    except Exception:
+                        time.sleep(0.02)
+                
+                if not replaced:
+                    with open(self.state_file, "w", encoding="utf-8") as f:
+                        json.dump(data, f, indent=2)
             except Exception as e:
+                pass
+            finally:
                 if os.path.exists(tmp_file):
                     try:
                         os.remove(tmp_file)
                     except Exception:
                         pass
-                print(f"[{self.node_id}] Error saving state: {e}")
 
     def record_local_mutation(self, rel_path: str, manifest: FileManifest, is_delete: bool = False) -> FileEntry:
         """

@@ -53,6 +53,7 @@ class StateJournal:
         self.conflicts: List[ConflictRecord] = []
         self.mutation_log: List[dict] = []
         self.resolver = ConflictResolver(self.sync_dir)
+        self._save_lock = threading.Lock()
 
         os.makedirs(self.meta_dir, exist_ok=True)
         self.load_state()
@@ -72,23 +73,27 @@ class StateJournal:
 
     def save_state(self):
         """Persists state atomically to disk."""
-        os.makedirs(self.meta_dir, exist_ok=True)
-        data = {
-            "node_id": self.node_id,
-            "saved_at": time.time(),
-            "entries": {k: v.to_dict() for k, v in self.entries.items()},
-            "conflicts": [c.to_dict() for c in self.conflicts],
-            "mutation_log": self.mutation_log[-100:]
-        }
-        tmp_file = f"{self.state_file}.tmp.{os.getpid()}"
-        try:
-            with open(tmp_file, "w", encoding="utf-8") as f:
-                json.dump(data, f, indent=2)
-            os.replace(tmp_file, self.state_file)
-        except Exception as e:
-            if os.path.exists(tmp_file):
-                os.remove(tmp_file)
-            print(f"[{self.node_id}] Error saving state: {e}")
+        with self._save_lock:
+            os.makedirs(self.meta_dir, exist_ok=True)
+            data = {
+                "node_id": self.node_id,
+                "saved_at": time.time(),
+                "entries": {k: v.to_dict() for k, v in self.entries.items()},
+                "conflicts": [c.to_dict() for c in self.conflicts],
+                "mutation_log": self.mutation_log[-100:]
+            }
+            tmp_file = f"{self.state_file}.tmp.{self.node_id}.{int(time.time()*1000000)}"
+            try:
+                with open(tmp_file, "w", encoding="utf-8") as f:
+                    json.dump(data, f, indent=2)
+                os.replace(tmp_file, self.state_file)
+            except Exception as e:
+                if os.path.exists(tmp_file):
+                    try:
+                        os.remove(tmp_file)
+                    except Exception:
+                        pass
+                print(f"[{self.node_id}] Error saving state: {e}")
 
     def record_local_mutation(self, rel_path: str, manifest: FileManifest, is_delete: bool = False) -> FileEntry:
         """

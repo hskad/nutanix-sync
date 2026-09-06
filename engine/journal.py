@@ -1,6 +1,7 @@
 import os
 import json
 import time
+import threading
 from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass, asdict
 from engine.chunker import FileManifest
